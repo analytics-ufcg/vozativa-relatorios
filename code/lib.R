@@ -26,7 +26,6 @@ import_data <- function(){
     fetched = jsonlite::fromJSON("https://voz-ativa-producao.herokuapp.com/api/respostas", flatten = T)
     # respostas = jsonlite::fromJSON("https://voz-ativa.herokuapp.com/api/respostas", flatten = T)
     respostas = fetched[["data"]]
-    
     respostas %>% 
         filter(!is.na(nome_urna)) %>% 
         write_csv(here::here("data/estado-dos-candidatos.csv"))
@@ -49,6 +48,7 @@ read_projectdata <- function(){
                  recebeu = col_logical(),
                  respostas.129411238 = col_character(),
                  respostas.129520614 = col_character(),
-                 respostas.129521027 = col_character()
+                 respostas.129521027 = col_character(),
+                 eleito =  col_logical()
              ))
 }
