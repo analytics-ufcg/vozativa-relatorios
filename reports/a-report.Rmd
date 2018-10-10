@@ -27,7 +27,27 @@ paleta = c("#404E4D",
 ```
 
 ```{r read, warning=FALSE}
-dados = read_projectdata()
+
+#dados <- read_projectdata()
+eleitos <- read_csv("~/Documentos/vozativa-relatorios/data/eleitos.csv", col_types = cols(
+        eleito = col_logical()))
+dados <- read_csv("~/Documentos/vozativa-relatorios/data/estado-dos-candidatos.csv", 
+    col_types = cols(candidaturas = col_double(), 
+        eleito = col_logical(), recebeu = col_logical(), 
+        respondeu = col_logical(),date_modified = col_datetime(format = ""),
+                 date_created = col_datetime(format = "")))
+
+dados <- dados[,-50]
+
+eleitos <- eleitos %>% mutate(nome_urna = ifelse(nome_urna == "CHICO D&APOS;ANGELO", "CHICO D ANGELO", nome_urna))
+eleitos <- eleitos %>% select(nome_urna, uf, eleito)
+eleitos <- eleitos %>% mutate(nome_urna = toupper(nome_urna)) %>% mutate(uf = toupper(uf))
+dados <- dados %>% mutate(nome_urna = toupper(nome_urna)) %>% mutate(uf = toupper(uf))
+
+dados <- dados %>% left_join(eleitos, by = c("nome_urna" = "nome_urna", "uf" = "uf")) 
+dados <- dados %>% mutate(eleito = ifelse(is.na(eleito), FALSE, eleito))
+
+dados <- dados[,-c(61:63)]
 ```
 
 *Atualizado em `r lubridate::now()`*
