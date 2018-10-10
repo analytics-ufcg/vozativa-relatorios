@@ -48,6 +48,9 @@ dados <- dados %>% left_join(eleitos, by = c("nome_urna" = "nome_urna", "uf" = "
 dados <- dados %>% mutate(eleito = ifelse(is.na(eleito), FALSE, eleito))
 
 dados <- dados[,-c(61:63)]
+
+eleitos <- dados %>% filter(eleito == TRUE)
+
 ```
 
 *Atualizado em `r lubridate::now()`*
@@ -64,7 +67,7 @@ dados %>%
     gather(key = "Número", value = "Valor") %>% 
     knitr::kable()
 
-dados %>% filter(eleito == TRUE) %>% 
+eleitos %>% 
     summarise(
         `Total de eleitos` = n(),
         `Conseguimos email` = sprintf("%d (%.1f%%)", sum(recebeu), 100* sum(recebeu) / n()),
@@ -78,7 +81,8 @@ dados %>% filter(eleito == TRUE) %>%
 ## Nosso progresso
 
 ```{r}
-dados %>% 
+
+ dados %>% 
     count(respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
     mutate(`Respondeu (%)` = n / sum(n) * 100) %>% 
@@ -86,6 +90,8 @@ dados %>%
     geom_col(width = .2) + 
     theme(legend.position = "None") + 
     labs(title = "No geral")
+
+
 ```
 
 
@@ -122,6 +128,20 @@ dados %>%
         title = "Respostas por UF (em %)"
     )
 
+eleitos %>% 
+    count(uf, respondeu) %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    group_by(uf) %>% 
+    mutate(`Respondeu (%)` = n / sum(n) * 100, 
+           sucesso = ifelse(respondeu == TRUE, min(`Respondeu (%)`), 0)) %>% 
+    ggplot(aes(x = reorder(uf, sucesso), y = `Respondeu (%)`, fill = Respondeu)) + 
+    geom_col(position = "stack") + 
+    coord_flip() + 
+    labs(
+        x = "",
+        title = "Respostas dos Eleitos por UF (em %)"
+    )
+
 ```
 
 ```{r}
@@ -135,6 +155,18 @@ dados %>%
     labs(
         x = "",
         title = "Respostas por UF (em absoluto)",
+        y = "Quantidade de candidaturas"
+    )
+
+eleitos %>%  
+    count(uf, respondeu) %>% group_by(uf) %>% mutate(total = sum(n)) %>% ungroup() %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    ggplot(aes(x = reorder(uf, total), y = n, fill = Respondeu)) + 
+    geom_col(position = "stack") + 
+    coord_flip() + 
+    labs(
+        x = "",
+        title = "Respostas dos Eleitos por UF (em absoluto)",
         y = "Quantidade de candidaturas"
     )
 ```
@@ -158,6 +190,22 @@ dados %>%
         title = "Respostas por PARTIDO (em %)"
     )
 
+eleitos %>% 
+    count(sg_partido, respondeu) %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    group_by(sg_partido) %>% 
+    mutate(`Respondeu (%)` = n / sum(n) * 100, 
+           sucesso =ifelse(respondeu == TRUE, min(`Respondeu (%)`), 0)) %>% 
+    ggplot(aes(x = reorder(sg_partido, sucesso), 
+               y = `Respondeu (%)`, 
+               fill = Respondeu)) + 
+    geom_col(position = "stack") + 
+    coord_flip() + 
+    labs(
+        x = "",
+        title = "Respostas dos Eleitos por PARTIDO (em %)"
+    )
+
 ```
 
 ```{r}
@@ -172,7 +220,17 @@ dados %>%
         title = "Respostas por PARTIDO (em absoluto)",
         y = "Quantidade de candidaturas"
     )
-
+ eleitos %>% 
+    count(sg_partido, respondeu) %>%  group_by(sg_partido) %>% mutate(total = sum(n)) %>% ungroup() %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    ggplot(aes(x = reorder(sg_partido, total), y = n, fill = Respondeu)) + 
+    geom_col(position = "stack") + 
+    coord_flip() + 
+    labs(
+        x = "",
+        title = "Respostas dos Eleitos por PARTIDO (em absoluto)",
+        y = "Quantidade de candidaturas"
+    )
 ```
 
 ```{r fig.width=8}
