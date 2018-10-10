@@ -29,9 +29,9 @@ paleta = c("#404E4D",
 ```{r read, warning=FALSE}
 
 #dados <- read_projectdata()
-eleitos <- read_csv("~/Documentos/vozativa-relatorios/data/eleitos.csv", col_types = cols(
+eleitos <- read_csv("../data/eleitos.csv", col_types = cols(
         eleito = col_logical()))
-dados <- read_csv("~/Documentos/vozativa-relatorios/data/estado-dos-candidatos.csv", 
+dados <- read_csv("../data/estado-dos-candidatos.csv", 
     col_types = cols(candidaturas = col_double(), 
         eleito = col_logical(), recebeu = col_logical(), 
         respondeu = col_logical(),date_modified = col_datetime(format = ""),
@@ -80,18 +80,24 @@ eleitos %>%
 
 ## Nosso progresso
 
+Durante cerca de dois meses os candidatos ao cargo de deputado federal foram contatados para responderem o questionário da Voz Ativa. Nos gráficos seguintes há um sumário do progresso de respostas coletadas através do SurveyMonkey. 
+Cerca de 14% dos candidatos dos quais a plataforma conseguiu contactar respondeu o questionário. Com divulgações efetivas em plataformas e redes sociais a adesão dos candidatos à plataforma continuou crescente até o dia das eleições.
+
 ```{r}
 cbPalette <- c("#bcc0c6", "#56B4E9")
  
+### No geral
+
 dados %>% 
+    filter(recebeu == TRUE) %>%
     count(respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
     mutate(`Respondeu (%)` = n / sum(n) * 100) %>% 
     ggplot(aes(x = Respondeu, y = `Respondeu (%)`, fill = Respondeu)) + 
     geom_col(width = .2) + 
+    geom_text(aes(label = sprintf("%.1f%%", round(n / sum(n) * 100, digits = 2)), vjust=0)) +
     theme(legend.position = "None") + 
-    labs(title = "No geral") + scale_fill_manual(values = cbPalette)
-
+    labs(title = "Proporção de respostas recebidas") + scale_fill_manual(values = cbPalette)
 
 ```
 
@@ -112,7 +118,9 @@ dados %>%
 ```
 
 
-### Por UF
+### Por estado
+
+Analisando nosso progresso num contexto de estado vemos a questão de respostas percentuais e absolutas para candidatos em geral e candidatos eleitos. Na visão geral, São Paulo foi o estado onde obtivemos maior sucesso percentual e em nenhum estado não obtivemos respostas. O Espírito Santo, décimo segundo com o maior percentual de respostas, foi o estado com mais candidatos eleitos e que responderam a plataforma Voz Ativa.
 
 ```{r}
 dados %>% 
@@ -126,9 +134,13 @@ dados %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas por UF (em %)"
+        title = "Percentual de respostas por estado"
     ) + scale_fill_manual(values = cbPalette)
 
+```
+
+
+```{r}
 eleitos %>% 
     count(uf, respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
@@ -140,7 +152,7 @@ eleitos %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas dos eleitos por UF (em %)"
+        title = "Percentual de respostas de eleitos por estado"
     ) + scale_fill_manual(values = cbPalette)
 
 ```
@@ -156,10 +168,13 @@ dados %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas por UF (em absoluto)",
-        y = "Quantidade de candidaturas"
-    ) + scale_fill_manual(values = cbPalette)
+        title = "Respostas em absoluto por estado",
+        y = "Quantidade de candidaturas") + scale_fill_manual(values = cbPalette)
 
+```
+
+
+```{r}
 eleitos %>%  
     count(uf, respondeu) %>% group_by(uf) %>% mutate(total = sum(n)) %>% ungroup() %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
@@ -169,12 +184,15 @@ eleitos %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas dos eleitos por UF (em absoluto)",
+        title = "Respostas de eleitos em absoluto por estado",
         y = "Quantidade de candidaturas"
     ) + scale_fill_manual(values = cbPalette)
 ```
 
+
 ### Por partido
+
+Sob a perspectiva de partido político, é visto que os partidos considerados menores em geral aderiram mais à Voz Ativa do que os tradicionalmente dominantes da câmara como o PSDB.
 
 ```{r}
 dados %>% 
@@ -190,9 +208,13 @@ dados %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas por PARTIDO (em %)"
+        title = "Percentual de respostas por partido"
     ) + scale_fill_manual(values = cbPalette)
 
+```
+
+
+```{r}
 eleitos %>% 
     count(sg_partido, respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
@@ -206,10 +228,11 @@ eleitos %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas dos eleitos por PARTIDO (em %)"
+        title = "Percentual de respostas de eleitos por partido"
     ) + scale_fill_manual(values = cbPalette)
 
 ```
+
 
 ```{r}
 dados %>% 
@@ -221,25 +244,33 @@ dados %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas por PARTIDO (em absoluto)",
+        title = "Respostas em absoluto por partido",
         y = "Quantidade de candidaturas"
+
     ) + scale_fill_manual(values = cbPalette)
 
+
+```
+
+```{r}
  eleitos %>% 
     count(sg_partido, respondeu) %>%  
     mutate(countsim = ifelse(respondeu, n, 0)) %>% 
+    group_by(sg_partido) %>% mutate(total = sum(n)) %>% ungroup() %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
     ggplot(aes(x = reorder(sg_partido, countsim), y = n, fill = Respondeu)) + 
     geom_col(position = "stack") + 
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas dos eleitos por PARTIDO (em absoluto)",
+        title = "Respostas de eleitos em absoluto por partido",
         y = "Quantidade de candidaturas"
     ) + scale_fill_manual(values = cbPalette)
 ```
 
+
 ### Comparativo entre respostas de candidatos eleitos e não eleitos
+
 
 ```{r}
 
@@ -263,7 +294,8 @@ el$ymin = c(0, head(el$ymax, n=-1))
      annotate("text", x = 0, y = 0, label = "Eleitos que responderam") +
      labs(
         x = "",
-        y = "") + scale_fill_manual(values = cbPalette)
+        y = "") + scale_fill_manual(values = cbPalette)+
+   geom_label(aes(label=paste(round(fraction*100,2),"%"),x=3.5,y=(ymin+ymax)/2),inherit.aes = TRUE, show.legend = FALSE)
 
 nel <- dados %>% filter(eleito == FALSE) %>%  count(respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
@@ -284,10 +316,13 @@ nel$ymin = c(0, head(nel$ymax, n=-1))
      annotate("text", x = 0, y = 0, label = "Não eleitos que responderam") +
      labs(
         x = "",
-        y = "") + scale_fill_manual(values = cbPalette)
+        y = "") + scale_fill_manual(values = cbPalette) +
+   geom_label(aes(label=paste(round(fraction*100,2),"%"),x=3.5,y=(ymin+ymax)/2),inherit.aes = TRUE, show.legend = FALSE)
 ```
 
-### Visão geral da aderência dos candidatos ao questionário
+
+### Relação partidos e estados na Voz Ativa
+
 
 ```{r fig.width=8}
 dados %>% 
