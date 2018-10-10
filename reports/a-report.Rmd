@@ -120,7 +120,7 @@ dados %>%
 
 ### Por estado
 
-Analisando nosso progresso num contexto de estado vemos a questão de respostas percentuais e absolutas para candidatos em geral e candidatos eleitos. Na visão geral, São Paulo foi o estado onde obtivemos maior sucesso percentual e em nenhum estado não obtivemos respostas. O Espírito Santo, décimo segundo com o maior percentual de respostas, foi o estado com mais candidatos eleitos e que responderam a plataforma Voz Ativa.
+Analisando nosso progresso num contexto de estado vemos a questão de respostas percentuais e absolutas para candidatos em geral e candidatos eleitos. Na visão geral, São Paulo foi o estado onde obtivemos maior sucesso percentual e em nenhum estado não obtivemos respostas. O Espírito Santo, décimo segundo com o maior percentual de respostas, foi o estado com maior proporção de candidatos eleitos e que responderam a plataforma Voz Ativa.
 
 ```{r}
 dados %>% 
@@ -157,6 +157,8 @@ eleitos %>%
 
 ```
 
+Já em valores absolutos São Paulo lidera tanto em uma visão geral como entre os candidatos que foram eleitos, no entanto Rio Grande do Sul e Paraná ultrapassam o Rio de Janeiro quando se trata de quantidade de respostas entre candidatos eleitos. Podemos observar também que dentre os 26 estados brasileiros em 17 não obtivemos respostas dos candidatos que foram eleitos.
+
 ```{r}
 options(scipen = 999)
 dados %>% 
@@ -170,6 +172,7 @@ dados %>%
         x = "",
         title = "Respostas em absoluto por estado",
         y = "Quantidade de candidaturas") + scale_fill_manual(values = cbPalette)
+
 
 ```
 
@@ -187,12 +190,13 @@ eleitos %>%
         title = "Respostas de eleitos em absoluto por estado",
         y = "Quantidade de candidaturas"
     ) + scale_fill_manual(values = cbPalette)
+
 ```
 
 
 ### Por partido
 
-Sob a perspectiva de partido político, é visto que os partidos considerados menores em geral aderiram mais à Voz Ativa do que os tradicionalmente dominantes da câmara como o PSDB.
+Sob a perspectiva de partido político, é visto que os partidos considerados menores, em geral, aderiram mais à Voz Ativa do que os tradicionalmente dominantes da câmara como o PSDB, MDB e PT, sendo esse uma exceção, pois teve uma porcentagem expressiva de respostas ao compará-lo aos outros.
 
 ```{r}
 dados %>% 
