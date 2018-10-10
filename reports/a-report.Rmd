@@ -81,15 +81,16 @@ eleitos %>%
 ## Nosso progresso
 
 ```{r}
-
- dados %>% 
+cbPalette <- c("#bcc0c6", "#56B4E9")
+ 
+dados %>% 
     count(respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
     mutate(`Respondeu (%)` = n / sum(n) * 100) %>% 
     ggplot(aes(x = Respondeu, y = `Respondeu (%)`, fill = Respondeu)) + 
     geom_col(width = .2) + 
     theme(legend.position = "None") + 
-    labs(title = "No geral")
+    labs(title = "No geral") + scale_fill_manual(values = cbPalette)
 
 
 ```
@@ -97,17 +98,17 @@ eleitos %>%
 
 
 ```{r}
-dados %>% 
+  dados %>% 
     filter(!is.na(date_created)) %>% 
     select(date_created) %>% 
     arrange(date_created) %>% 
     mutate(i = 1, 
            Total = cumsum(i)) %>% 
     ggplot(aes(x = date_created, y = Total)) + 
-    geom_line(color = "deeppink", size = 1.2) + 
+    geom_line(color = "#56B4E9", size = 1.2) + 
     labs(title = "Número de respostas ao longo do tempo", 
          x = "Data", 
-         y = "Respostas recebidas")
+         y = "Respostas recebidas") 
 ```
 
 
@@ -126,7 +127,7 @@ dados %>%
     labs(
         x = "",
         title = "Respostas por UF (em %)"
-    )
+    ) + scale_fill_manual(values = cbPalette)
 
 eleitos %>% 
     count(uf, respondeu) %>% 
@@ -139,8 +140,8 @@ eleitos %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas dos Eleitos por UF (em %)"
-    )
+        title = "Respostas dos eleitos por UF (em %)"
+    ) + scale_fill_manual(values = cbPalette)
 
 ```
 
@@ -156,7 +157,7 @@ dados %>%
         x = "",
         title = "Respostas por UF (em absoluto)",
         y = "Quantidade de candidaturas"
-    )
+    ) + scale_fill_manual(values = cbPalette)
 
 eleitos %>%  
     count(uf, respondeu) %>% group_by(uf) %>% mutate(total = sum(n)) %>% ungroup() %>% 
@@ -166,9 +167,9 @@ eleitos %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas dos Eleitos por UF (em absoluto)",
+        title = "Respostas dos eleitos por UF (em absoluto)",
         y = "Quantidade de candidaturas"
-    )
+    ) + scale_fill_manual(values = cbPalette)
 ```
 
 ### Por partido
@@ -188,7 +189,7 @@ dados %>%
     labs(
         x = "",
         title = "Respostas por PARTIDO (em %)"
-    )
+    ) + scale_fill_manual(values = cbPalette)
 
 eleitos %>% 
     count(sg_partido, respondeu) %>% 
@@ -203,8 +204,8 @@ eleitos %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas dos Eleitos por PARTIDO (em %)"
-    )
+        title = "Respostas dos eleitos por PARTIDO (em %)"
+    ) + scale_fill_manual(values = cbPalette)
 
 ```
 
@@ -212,28 +213,31 @@ eleitos %>%
 dados %>% 
     count(sg_partido, respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    ggplot(aes(x = reorder(sg_partido, n), y = n, fill = Respondeu)) + 
+    mutate(countsim = ifelse(respondeu, n, 0)) %>% 
+    ggplot(aes(x = reorder(sg_partido, countsim), y = n, fill = Respondeu)) + 
     geom_col(position = "stack") + 
     coord_flip() + 
     labs(
         x = "",
         title = "Respostas por PARTIDO (em absoluto)",
         y = "Quantidade de candidaturas"
-    )
+    ) + scale_fill_manual(values = cbPalette)
+
  eleitos %>% 
-    count(sg_partido, respondeu) %>%  group_by(sg_partido) %>% mutate(total = sum(n)) %>% ungroup() %>% 
+    count(sg_partido, respondeu) %>%  
+    mutate(countsim = ifelse(respondeu, n, 0)) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    ggplot(aes(x = reorder(sg_partido, total), y = n, fill = Respondeu)) + 
+    ggplot(aes(x = reorder(sg_partido, countsim), y = n, fill = Respondeu)) + 
     geom_col(position = "stack") + 
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas dos Eleitos por PARTIDO (em absoluto)",
+        title = "Respostas dos eleitos por PARTIDO (em absoluto)",
         y = "Quantidade de candidaturas"
-    )
+    ) + scale_fill_manual(values = cbPalette)
 ```
 
-### Comparativo entre Respostas de Candidatos Eleitos e Não Eleitos
+### Comparativo entre respostas de candidatos eleitos e não eleitos
 
 ```{r}
 
@@ -254,10 +258,10 @@ el$ymin = c(0, head(el$ymax, n=-1))
      theme(panel.grid=element_blank()) +
      theme(axis.text=element_blank()) +
      theme(axis.ticks=element_blank()) +
-     annotate("text", x = 0, y = 0, label = "Eleitos que Responderam") +
+     annotate("text", x = 0, y = 0, label = "Eleitos que responderam") +
      labs(
         x = "",
-        y = "")
+        y = "") + scale_fill_manual(values = cbPalette)
 
 nel <- dados %>% filter(eleito == FALSE) %>%  count(respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
@@ -275,12 +279,13 @@ nel$ymin = c(0, head(nel$ymax, n=-1))
      theme(panel.grid=element_blank()) +
      theme(axis.text=element_blank()) +
      theme(axis.ticks=element_blank()) +
-     annotate("text", x = 0, y = 0, label = "Não Eleitos que Responderam") +
+     annotate("text", x = 0, y = 0, label = "Não eleitos que responderam") +
      labs(
         x = "",
-        y = "")
+        y = "") + scale_fill_manual(values = cbPalette)
 ```
 
+### Visão geral da aderência dos candidatos ao questionário
 
 ```{r fig.width=8}
 dados %>% 
@@ -297,8 +302,28 @@ dados %>%
     labs(x = "", y = "", color = "% responderam", size = "Candidatos")
 ```
 
+# Analisando os dados gerados pelo Google Analytics
 
+### Quantidade de usuários por região
 
+![](/home/luizacs/Documentos/vozativa-relatorios/img/acessos-por-regiao.png)
+
+### Quantidade de usuários (visão geral)
+
+![](/home/luizacs/Documentos/vozativa-relatorios/img/usuarios.png)
+
+### Quantidade de visualizações da página 
+
+![](/home/luizacs/Documentos/vozativa-relatorios/img/visualizacoes-pag.png)
+
+### Tempo de permanência na página
+
+![](/home/luizacs/Documentos/vozativa-relatorios/img/tempo-permanencia.png)
+
+### Canais de acesso
+
+![](/home/luizacs/Documentos/vozativa-relatorios/img/canais.png)
+![](/home/luizacs/Documentos/vozativa-relatorios/img/canais-barra.png)
 <!-- ### Por partido e UF -->
 
 ```{r fig.height=9, fig.width=9}
