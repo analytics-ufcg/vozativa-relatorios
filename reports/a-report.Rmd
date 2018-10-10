@@ -149,8 +149,9 @@ eleitos %>%
 options(scipen = 999)
 dados %>% 
     count(uf, respondeu) %>% 
-    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    ggplot(aes(x = reorder(uf, n), y = n, fill = Respondeu)) + 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>%
+    mutate(countsim = ifelse(respondeu, n, 0)) %>% 
+    ggplot(aes(x = reorder(uf, countsim), y = n, fill = Respondeu)) + 
     geom_col(position = "stack") + 
     coord_flip() + 
     labs(
@@ -162,7 +163,8 @@ dados %>%
 eleitos %>%  
     count(uf, respondeu) %>% group_by(uf) %>% mutate(total = sum(n)) %>% ungroup() %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    ggplot(aes(x = reorder(uf, total), y = n, fill = Respondeu)) + 
+    mutate(countsim = ifelse(respondeu, n, 0)) %>% 
+    ggplot(aes(x = reorder(uf, countsim), y = n, fill = Respondeu)) + 
     geom_col(position = "stack") + 
     coord_flip() + 
     labs(
