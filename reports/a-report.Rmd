@@ -275,6 +275,7 @@ dados %>%
 
 ### Comparativo entre respostas de candidatos eleitos e não eleitos
 
+Sobre os candidatos que responderam ao questionário, eles são cerca de 3% dos eleitos para a câmara nos próximos anos e cerca de 10% dos que não conseguiram chegar lá.
 
 ```{r}
 
@@ -327,6 +328,7 @@ nel$ymin = c(0, head(nel$ymax, n=-1))
 
 ### Relação partidos e estados na Voz Ativa
 
+A participação dos partidos nas eleições e como utilizaram a Voz Ativa em cada estado é observável abaixo. Em suma, os partidos com mais candidatos em um estado tem uma porcentagem baixa de adesão à plataforma. Há uma reafirmação da análise acima que indicou o NOVO, a REDE e o PSOL como os partidos mais presentes na Voz Ativa. 
 
 ```{r fig.width=8}
 dados %>% 
@@ -345,26 +347,28 @@ dados %>%
 
 # Analisando os dados gerados pelo Google Analytics
 
+Com o auxílio do Google Analytics coletamos as informações de tráfego e acessos ao site [www.vozativa.org](www.vozativa.org). Com um tempo médio na página de quase 7 minutos, a plataforma teve 108 mil usuários e 164 mil visualizações. O estado de São Paulo foi a origem da maior parte (38,47%) dos acessos à plataforma, seguido de Minas Gerais (11,07%) e o Rio de Janeiro (8,9%).
+
 ### Quantidade de usuários por região
 
-![](/home/luizacs/Documentos/vozativa-relatorios/img/acessos-por-regiao.png)
+![](../img/acessos-por-regiao.png)
 
 ### Quantidade de usuários (visão geral)
 
-![](/home/luizacs/Documentos/vozativa-relatorios/img/usuarios.png)
+![](../img/usuarios.png)
 
 ### Quantidade de visualizações da página 
 
-![](/home/luizacs/Documentos/vozativa-relatorios/img/visualizacoes-pag.png)
+![](../img/visualizacoes-pag.png)
 
 ### Tempo de permanência na página
 
-![](/home/luizacs/Documentos/vozativa-relatorios/img/tempo-permanencia.png)
+![](../img/tempo-permanencia.png)
 
 ### Canais de acesso
 
-![](/home/luizacs/Documentos/vozativa-relatorios/img/canais.png)
-![](/home/luizacs/Documentos/vozativa-relatorios/img/canais-barra.png)
+![](../img/canais.png)
+![](../img/canais-barra.png)
 <!-- ### Por partido e UF -->
 
 ```{r fig.height=9, fig.width=9}
