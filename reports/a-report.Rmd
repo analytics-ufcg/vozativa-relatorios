@@ -249,6 +249,55 @@ eleitos %>%
     )
 ```
 
+
+### Comparativo entre Respostas de Candidatos Eleitos e Não Eleitos
+
+```{r}
+
+el <- eleitos %>% 
+    count(respondeu) %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    mutate(`Respondeu (%)` = n / sum(n) * 100) 
+ 
+el$fraction <- el$n/sum(el$n)
+el = el[order(el$fraction), ]
+el$ymax = cumsum(el$fraction)
+el$ymin = c(0, head(el$ymax, n=-1)) 
+
+ ggplot(el, aes(fill=Respondeu, ymax=ymax, ymin=ymin, xmax=4, xmin=3)) +
+     geom_rect() +
+     coord_polar(theta="y") +
+     xlim(c(0, 4)) +
+     theme(panel.grid=element_blank()) +
+     theme(axis.text=element_blank()) +
+     theme(axis.ticks=element_blank()) +
+     annotate("text", x = 0, y = 0, label = "Eleitos que Responderam") +
+     labs(
+        x = "",
+        y = "")
+
+nel <- dados %>% filter(eleito == FALSE) %>%  count(respondeu) %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    mutate(`Respondeu (%)` = n / sum(n) * 100) 
+ 
+nel$fraction <- nel$n/sum(nel$n)
+nel = nel[order(nel$fraction), ]
+nel$ymax = cumsum(nel$fraction)
+nel$ymin = c(0, head(nel$ymax, n=-1))
+
+ ggplot(nel, aes(fill=Respondeu, ymax=ymax, ymin=ymin, xmax=4, xmin=3)) +
+     geom_rect() +
+     coord_polar(theta="y") +
+     xlim(c(0, 4)) +
+     theme(panel.grid=element_blank()) +
+     theme(axis.text=element_blank()) +
+     theme(axis.ticks=element_blank()) +
+     annotate("text", x = 0, y = 0, label = "Não Eleitos que Responderam") +
+     labs(
+        x = "",
+        y = "")
+```
+
 ### Relação partidos e estados na Voz Ativa
 
 ```{r fig.width=8}
@@ -265,6 +314,8 @@ dados %>%
     coord_flip() + 
     labs(x = "", y = "", color = "% responderam", size = "Candidatos")
 ```
+
+
 
 <!-- ### Por partido e UF -->
 
