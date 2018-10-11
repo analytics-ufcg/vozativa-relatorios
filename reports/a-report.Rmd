@@ -24,14 +24,17 @@ paleta = c("#404E4D",
            "#938BA1",
            "#2D3142",
            "#F4743B")
+
+cbPalette <- c("#bcc0c6", "#56B4E9")
+
 ```
 
 ```{r read, warning=FALSE}
 
 #dados <- read_projectdata()
-eleitos <- read_csv("../data/eleitos.csv", col_types = cols(
+eleitos <- read_csv(here::here("data/eleitos.csv"), col_types = cols(
         eleito = col_logical()))
-dados <- read_csv("../data/estado-dos-candidatos.csv", 
+dados <- read_csv(here::here("data/estado-dos-candidatos.csv"), 
     col_types = cols(candidaturas = col_double(), 
         eleito = col_logical(), recebeu = col_logical(), 
         respondeu = col_logical(),date_modified = col_datetime(format = ""),
@@ -55,7 +58,11 @@ eleitos <- dados %>% filter(eleito == TRUE)
 
 *Atualizado em `r lubridate::now()`*
 
-## Alguns números
+## Total de respostas de candidaturas
+
+Durante cerca de dois meses os candidatos ao cargo de deputado federal foram contatados para responderem o questionário da Voz Ativa. Nos gráficos seguintes há um sumário do progresso de respostas coletadas através do SurveyMonkey. 
+
+Cerca de 14% dos candidatos dos quais a plataforma conseguiu contactar respondeu o questionário. Com divulgações efetivas em plataformas e redes sociais a adesão dos candidatos à plataforma continuou crescente até o dia das eleições.
 
 ```{r}
 dados %>% 
@@ -66,40 +73,22 @@ dados %>%
     ) %>% 
     gather(key = "Número", value = "Valor") %>% 
     knitr::kable()
+```
 
+Entre os eleitos, temos bem menos candidaturas que responderam.
+
+```{r}
 eleitos %>% 
     summarise(
         `Total de eleitos` = n(),
-        `Conseguimos email` = sprintf("%d (%.1f%%)", sum(recebeu), 100* sum(recebeu) / n()),
-        `Responderam` = sprintf("%d (%.1f%%)", sum(respondeu), 100*sum(respondeu) / sum(recebeu)), 
+        `Temos email` = sprintf("%d (%.1f%%)", sum(recebeu), 100* sum(recebeu) / 513),
+        `Responderam` = sprintf("%d (%.1f%%)", sum(respondeu), 100*sum(respondeu) / 513), 
     ) %>% 
     gather(key = "Número", value = "Valor") %>% 
     knitr::kable()
 
 ```
 
-## Nosso progresso
-
-Durante cerca de dois meses os candidatos ao cargo de deputado federal foram contatados para responderem o questionário da Voz Ativa. Nos gráficos seguintes há um sumário do progresso de respostas coletadas através do SurveyMonkey. 
-Cerca de 14% dos candidatos dos quais a plataforma conseguiu contactar respondeu o questionário. Com divulgações efetivas em plataformas e redes sociais a adesão dos candidatos à plataforma continuou crescente até o dia das eleições.
-
-```{r}
-cbPalette <- c("#bcc0c6", "#56B4E9")
- 
-### No geral
-
-dados %>% 
-    filter(recebeu == TRUE) %>%
-    count(respondeu) %>% 
-    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    mutate(`Respondeu (%)` = n / sum(n) * 100) %>% 
-    ggplot(aes(x = Respondeu, y = `Respondeu (%)`, fill = Respondeu)) + 
-    geom_col(width = .2) + 
-    geom_text(aes(label = sprintf("%.1f%%", round(n / sum(n) * 100, digits = 2)), vjust=0)) +
-    theme(legend.position = "None") + 
-    labs(title = "Proporção de respostas recebidas") + scale_fill_manual(values = cbPalette)
-
-```
 
 
 
