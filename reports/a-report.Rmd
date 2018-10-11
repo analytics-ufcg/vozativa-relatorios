@@ -275,7 +275,7 @@ dados %>%
 
 ### Comparativo entre respostas de candidatos eleitos e não eleitos
 
-Sobre os candidatos que responderam ao questionário, eles são cerca de 3% dos eleitos para a câmara nos próximos anos e cerca de 10% dos que não conseguiram chegar lá.
+Sobre os candidatos que responderam ao questionário, eles são cerca de 3% dos 513 eleitos para a câmara nos próximos anos e cerca de 10% dos 8082 que não conseguiram chegar lá.
 
 ```{r}
 
