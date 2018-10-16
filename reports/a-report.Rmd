@@ -24,15 +24,45 @@ paleta = c("#404E4D",
            "#938BA1",
            "#2D3142",
            "#F4743B")
+
+cbPalette <- c("#bcc0c6", "#56B4E9")
+
 ```
 
 ```{r read, warning=FALSE}
-dados = read_projectdata()
+
+dados <- read_projectdata()
+# eleitos <- read_csv(here::here("data/eleitos.csv"), col_types = cols(
+#         eleito = col_logical()))
+# dados <- read_csv(here::here("data/estado-dos-candidatos.csv"), 
+#     col_types = cols(candidaturas = col_double(), 
+#         eleito = col_logical(), recebeu = col_logical(), 
+#         respondeu = col_logical(),date_modified = col_datetime(format = ""),
+#                  date_created = col_datetime(format = "")))
+# 
+# dados <- dados[,-50]
+# 
+# eleitos <- eleitos %>% mutate(nome_urna = ifelse(nome_urna == "CHICO D&APOS;ANGELO", "CHICO D ANGELO", nome_urna))
+# eleitos <- eleitos %>% select(nome_urna, uf, eleito)
+# eleitos <- eleitos %>% mutate(nome_urna = toupper(nome_urna)) %>% mutate(uf = toupper(uf))
+# dados <- dados %>% mutate(nome_urna = toupper(nome_urna)) %>% mutate(uf = toupper(uf))
+# 
+# dados <- dados %>% left_join(eleitos, by = c("nome_urna" = "nome_urna", "uf" = "uf")) 
+# dados <- dados %>% mutate(eleito = ifelse(is.na(eleito), FALSE, eleito))
+# 
+# dados <- dados[,-c(61:63)]
+# 
+eleitos <- dados %>% filter(eleito == TRUE) 
+
 ```
 
 *Atualizado em `r lubridate::now()`*
 
-## Alguns números
+## Total de respostas de candidaturas
+
+Durante cerca de dois meses os candidatos ao cargo de deputado federal foram contatados para responderem o questionário da Voz Ativa. Nos gráficos seguintes há um sumário do progresso de respostas coletadas através do SurveyMonkey. 
+
+Cerca de 14% dos candidatos dos quais a plataforma conseguiu contactar respondeu o questionário. Com divulgações efetivas em plataformas e redes sociais a adesão dos candidatos à plataforma continuou crescente até o dia das eleições.
 
 ```{r}
 dados %>% 
@@ -43,49 +73,44 @@ dados %>%
     ) %>% 
     gather(key = "Número", value = "Valor") %>% 
     knitr::kable()
+```
 
-dados %>% filter(eleito == TRUE) %>% 
+Entre os eleitos, temos bem menos candidaturas que responderam.
+
+```{r}
+eleitos <- eleitos %>% mutate(reeleicao = ifelse(reeleicao == 1, TRUE, FALSE))
+eleitos %>% 
     summarise(
         `Total de eleitos` = n(),
-        `Conseguimos email` = sprintf("%d (%.1f%%)", sum(recebeu), 100* sum(recebeu) / n()),
-        `Responderam` = sprintf("%d (%.1f%%)", sum(respondeu), 100*sum(respondeu) / sum(recebeu)), 
+        `Temos email` = sprintf("%d (%.1f%%)", sum(recebeu), 100* sum(recebeu) / 513),
+        `Responderam` = sprintf("%d (%.1f%%)", sum(respondeu), 100*sum(respondeu) / 513),
+        `Tem informações na câmara` =  sprintf("%d (%.1f%%)", sum(reeleicao), 100*sum(reeleicao) / 513)
     ) %>% 
     gather(key = "Número", value = "Valor") %>% 
     knitr::kable()
 
 ```
 
-## Nosso progresso
-
-```{r}
-dados %>% 
-    count(respondeu) %>% 
-    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    mutate(`Respondeu (%)` = n / sum(n) * 100) %>% 
-    ggplot(aes(x = Respondeu, y = `Respondeu (%)`, fill = Respondeu)) + 
-    geom_col(width = .2) + 
-    theme(legend.position = "None") + 
-    labs(title = "No geral")
-```
-
 
 
 ```{r}
-dados %>% 
+  dados %>% 
     filter(!is.na(date_created)) %>% 
     select(date_created) %>% 
     arrange(date_created) %>% 
     mutate(i = 1, 
            Total = cumsum(i)) %>% 
     ggplot(aes(x = date_created, y = Total)) + 
-    geom_line(color = "deeppink", size = 1.2) + 
+    geom_line(color = "#56B4E9", size = 1.2) + 
     labs(title = "Número de respostas ao longo do tempo", 
          x = "Data", 
-         y = "Respostas recebidas")
+         y = "Respostas recebidas") 
 ```
 
 
-### Por UF
+### Por estado
+
+Analisando nosso progresso num contexto de estado vemos a questão de respostas percentuais e absolutas para candidatos em geral e candidatos eleitos. Na visão geral, São Paulo foi o estado onde obtivemos maior sucesso percentual e em nenhum estado não obtivemos respostas. O Espírito Santo, décimo segundo com o maior percentual de respostas, foi o estado com maior proporção de candidatos eleitos e que responderam a plataforma Voz Ativa.
 
 ```{r}
 dados %>% 
@@ -99,27 +124,69 @@ dados %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas por UF (em %)"
-    )
+        title = "Percentual de respostas por estado"
+    ) + scale_fill_manual(values = cbPalette)
 
 ```
+
+
+```{r}
+eleitos %>% 
+    count(uf, respondeu) %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    group_by(uf) %>% 
+    mutate(`Respondeu (%)` = n / sum(n) * 100, 
+           sucesso = ifelse(respondeu == TRUE, min(`Respondeu (%)`), 0)) %>% 
+    ggplot(aes(x = reorder(uf, sucesso), y = `Respondeu (%)`, fill = Respondeu)) + 
+    geom_col(position = "stack") + 
+    coord_flip() + 
+    labs(
+        x = "",
+        title = "Percentual de respostas de eleitos por estado"
+    ) + scale_fill_manual(values = cbPalette)
+
+```
+
+Já em valores absolutos São Paulo lidera tanto em uma visão geral como entre os candidatos que foram eleitos, no entanto Rio Grande do Sul e Paraná ultrapassam o Rio de Janeiro quando se trata de quantidade de respostas entre candidatos eleitos. Podemos observar também que dentre os 26 estados brasileiros em 17 não obtivemos respostas dos candidatos que foram eleitos.
 
 ```{r}
 options(scipen = 999)
 dados %>% 
     count(uf, respondeu) %>% 
-    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    ggplot(aes(x = reorder(uf, n), y = n, fill = Respondeu)) + 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>%
+    mutate(countsim = ifelse(respondeu, n, 0)) %>% 
+    ggplot(aes(x = reorder(uf, countsim), y = n, fill = Respondeu)) + 
     geom_col(position = "stack") + 
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas por UF (em absoluto)",
-        y = "Quantidade de candidaturas"
-    )
+        title = "Respostas em absoluto por estado",
+        y = "Quantidade de candidaturas") + scale_fill_manual(values = cbPalette)
+
+
 ```
 
+
+```{r}
+eleitos %>%  
+    count(uf, respondeu) %>% group_by(uf) %>% mutate(total = sum(n)) %>% ungroup() %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    mutate(countsim = ifelse(respondeu, n, 0)) %>% 
+    ggplot(aes(x = reorder(uf, countsim), y = n, fill = Respondeu)) + 
+    geom_col(position = "stack") + 
+    coord_flip() + 
+    labs(
+        x = "",
+        title = "Respostas de eleitos em absoluto por estado",
+        y = "Quantidade de candidaturas"
+    ) + scale_fill_manual(values = cbPalette)
+
+```
+
+
 ### Por partido
+
+Sob a perspectiva de partido político, é visto que os partidos considerados menores, em geral, aderiram mais à Voz Ativa do que os tradicionalmente dominantes da câmara como o PSDB, MDB e PT, sendo esse uma exceção, pois teve uma porcentagem expressiva de respostas ao compará-lo aos outros.
 
 ```{r}
 dados %>% 
@@ -135,25 +202,70 @@ dados %>%
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas por PARTIDO (em %)"
-    )
+        title = "Percentual de respostas por partido"
+    ) + scale_fill_manual(values = cbPalette)
 
 ```
+
+
+```{r}
+eleitos %>% 
+    count(sg_partido, respondeu) %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    group_by(sg_partido) %>% 
+    mutate(`Respondeu (%)` = n / sum(n) * 100, 
+           sucesso =ifelse(respondeu == TRUE, min(`Respondeu (%)`), 0)) %>% 
+    ggplot(aes(x = reorder(sg_partido, sucesso), 
+               y = `Respondeu (%)`, 
+               fill = Respondeu)) + 
+    geom_col(position = "stack") + 
+    coord_flip() + 
+    labs(
+        x = "",
+        title = "Percentual de respostas de eleitos por partido"
+    ) + scale_fill_manual(values = cbPalette)
+
+```
+
 
 ```{r}
 dados %>% 
     count(sg_partido, respondeu) %>% 
     mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    ggplot(aes(x = reorder(sg_partido, n), y = n, fill = Respondeu)) + 
+    mutate(countsim = ifelse(respondeu, n, 0)) %>% 
+    ggplot(aes(x = reorder(sg_partido, countsim), y = n, fill = Respondeu)) + 
     geom_col(position = "stack") + 
     coord_flip() + 
     labs(
         x = "",
-        title = "Respostas por PARTIDO (em absoluto)",
+        title = "Respostas em absoluto por partido",
         y = "Quantidade de candidaturas"
-    )
+
+    ) + scale_fill_manual(values = cbPalette)
+
 
 ```
+
+```{r}
+ eleitos %>% 
+    count(sg_partido, respondeu) %>%  
+    mutate(countsim = ifelse(respondeu, n, 0)) %>% 
+    group_by(sg_partido) %>% mutate(total = sum(n)) %>% ungroup() %>% 
+    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
+    ggplot(aes(x = reorder(sg_partido, countsim), y = n, fill = Respondeu)) + 
+    geom_col(position = "stack") + 
+    coord_flip() + 
+    labs(
+        x = "",
+        title = "Respostas de eleitos em absoluto por partido",
+        y = "Quantidade de candidaturas"
+    ) + scale_fill_manual(values = cbPalette)
+```
+
+
+### Relação partidos e estados na Voz Ativa
+
+A participação dos partidos nas eleições e como utilizaram a Voz Ativa em cada estado é observável abaixo. Em suma, os partidos com mais candidatos em um estado tem uma porcentagem baixa de adesão à plataforma. Há uma reafirmação da análise acima que indicou o NOVO, a REDE e o PSOL como os partidos mais presentes na Voz Ativa. 
 
 ```{r fig.width=8}
 dados %>% 
@@ -170,6 +282,33 @@ dados %>%
     labs(x = "", y = "", color = "% responderam", size = "Candidatos")
 ```
 
+# Analisando os dados gerados pelo Google Analytics
+
+Com o auxílio do Google Analytics coletamos as informações de tráfego e acessos ao site [www.vozativa.org](www.vozativa.org). Com um tempo médio na página de quase 7 minutos, a plataforma teve 108 mil usuários e 164 mil visualizações. O estado de São Paulo foi a origem da maior parte (38,47%) dos acessos à plataforma, seguido de Minas Gerais (11,07%) e o Rio de Janeiro (8,9%).
+
+### Quantidade de usuários por região
+
+![](../img/acessos-por-regiao.png)
+
+
+### Quantidade de visualizações da página 
+
+![](../img/visualizacoes-pag.png)
+
+### Quantidade de usuários (visão geral)
+
+![](../img/usuarios.png)
+
+### Tempo de permanência na página
+
+![](../img/tempo-permanencia.png)
+
+### Canais de acesso
+
+Os gráficos abaixo informam por quais canais de acesso o vozativa.org foi visitado, podemos observar que redes sociais como o facebook foram o maior canal de acesso utilizado.
+
+![](../img/canais.png)
+![](../img/canais-barra.png)
 <!-- ### Por partido e UF -->
 
 ```{r fig.height=9, fig.width=9}

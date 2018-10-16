@@ -23,9 +23,14 @@ theme_report <- function(base_size = 11,
 import_data <- function(){
     library(tidyverse)
     
-    fetched = jsonlite::fromJSON("https://voz-ativa-producao.herokuapp.com/api/respostas", flatten = T)
-    # respostas = jsonlite::fromJSON("https://voz-ativa.herokuapp.com/api/respostas", flatten = T)
-    respostas = fetched[["data"]]
+    fetched = jsonlite::fromJSON("https://voz-ativa-producao.herokuapp.com/api/respostas?pageNo=1&size=100", flatten = T)
+    total_pags = fetched[["paginas"]]
+    iterat = as.data.frame(seq(1,total_pags))
+    colnames(iterat) = "nPag"
+    respostas = iterat %>% rowwise() %>% do(
+      dplyr::bind_rows(
+      fetched = jsonlite::fromJSON(paste0("https://voz-ativa-producao.herokuapp.com/api/respostas?pageNo=",.$nPag,"&size=100"), flatten = T)[["data"]]
+      ))
     respostas %>% 
         filter(!is.na(nome_urna)) %>% 
         write_csv(here::here("data/estado-dos-candidatos.csv"))
