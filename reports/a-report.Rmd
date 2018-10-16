@@ -261,60 +261,6 @@ dados %>%
     ) + scale_fill_manual(values = cbPalette)
 ```
 
-
-### Comparativo entre respostas de candidatos eleitos e não eleitos
-
-Sobre os candidatos que responderam ao questionário, eles são cerca de 3% dos 513 eleitos para a câmara nos próximos anos e cerca de 10% dos 8082 que não conseguiram chegar lá.
-
-```{r}
-
-el <- eleitos %>% 
-    count(respondeu) %>% 
-    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    mutate(`Respondeu (%)` = n / sum(n) * 100) 
- 
-el$fraction <- el$n/sum(el$n)
-el = el[order(el$fraction), ]
-el$ymax = cumsum(el$fraction)
-el$ymin = c(0, head(el$ymax, n=-1)) 
-
- ggplot(el, aes(fill=Respondeu, ymax=ymax, ymin=ymin, xmax=4, xmin=3)) +
-     geom_rect() +
-     coord_polar(theta="y") +
-     xlim(c(0, 4)) +
-     theme(panel.grid=element_blank()) +
-     theme(axis.text=element_blank()) +
-     theme(axis.ticks=element_blank()) +
-     annotate("text", x = 0, y = 0, label = "Eleitos que responderam") +
-     labs(
-        x = "",
-        y = "") + scale_fill_manual(values = cbPalette)+
-   geom_label(aes(label=paste(round(fraction*100,2),"%"),x=3.5,y=(ymin+ymax)/2),inherit.aes = TRUE, show.legend = FALSE)
-
-nel <- dados %>% filter(eleito == FALSE) %>%  count(respondeu) %>% 
-    mutate(Respondeu = if_else(respondeu, "Sim", "Não")) %>% 
-    mutate(`Respondeu (%)` = n / sum(n) * 100) 
- 
-nel$fraction <- nel$n/sum(nel$n)
-nel = nel[order(nel$fraction), ]
-nel$ymax = cumsum(nel$fraction)
-nel$ymin = c(0, head(nel$ymax, n=-1))
-
- ggplot(nel, aes(fill=Respondeu, ymax=ymax, ymin=ymin, xmax=4, xmin=3)) +
-     geom_rect() +
-     coord_polar(theta="y") +
-     xlim(c(0, 4)) +
-     theme(panel.grid=element_blank()) +
-     theme(axis.text=element_blank()) +
-     theme(axis.ticks=element_blank()) +
-     annotate("text", x = 0, y = 0, label = "Não eleitos que responderam") +
-     labs(
-        x = "",
-        y = "") + scale_fill_manual(values = cbPalette) +
-   geom_label(aes(label=paste(round(fraction*100,2),"%"),x=3.5,y=(ymin+ymax)/2),inherit.aes = TRUE, show.legend = FALSE)
-```
-
-
 ### Relação partidos e estados na Voz Ativa
 
 A participação dos partidos nas eleições e como utilizaram a Voz Ativa em cada estado é observável abaixo. Em suma, os partidos com mais candidatos em um estado tem uma porcentagem baixa de adesão à plataforma. Há uma reafirmação da análise acima que indicou o NOVO, a REDE e o PSOL como os partidos mais presentes na Voz Ativa. 
@@ -342,19 +288,21 @@ Com o auxílio do Google Analytics coletamos as informações de tráfego e aces
 
 ![](../img/acessos-por-regiao.png)
 
-### Quantidade de usuários (visão geral)
-
-![](../img/usuarios.png)
-
 ### Quantidade de visualizações da página 
 
 ![](../img/visualizacoes-pag.png)
+
+### Quantidade de usuários (visão geral)
+
+![](../img/usuarios.png)
 
 ### Tempo de permanência na página
 
 ![](../img/tempo-permanencia.png)
 
 ### Canais de acesso
+
+Os gráficos abaixo informam por quais canais de acesso o vozativa.org foi visitado, podemos observar que redes sociais como o facebook foram o maior canal de acesso utilizado.
 
 ![](../img/canais.png)
 ![](../img/canais-barra.png)
