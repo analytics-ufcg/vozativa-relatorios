@@ -31,28 +31,28 @@ cbPalette <- c("#bcc0c6", "#56B4E9")
 
 ```{r read, warning=FALSE}
 
-#dados <- read_projectdata()
-eleitos <- read_csv(here::here("data/eleitos.csv"), col_types = cols(
-        eleito = col_logical()))
-dados <- read_csv(here::here("data/estado-dos-candidatos.csv"), 
-    col_types = cols(candidaturas = col_double(), 
-        eleito = col_logical(), recebeu = col_logical(), 
-        respondeu = col_logical(),date_modified = col_datetime(format = ""),
-                 date_created = col_datetime(format = "")))
-
-dados <- dados[,-50]
-
-eleitos <- eleitos %>% mutate(nome_urna = ifelse(nome_urna == "CHICO D&APOS;ANGELO", "CHICO D ANGELO", nome_urna))
-eleitos <- eleitos %>% select(nome_urna, uf, eleito)
-eleitos <- eleitos %>% mutate(nome_urna = toupper(nome_urna)) %>% mutate(uf = toupper(uf))
-dados <- dados %>% mutate(nome_urna = toupper(nome_urna)) %>% mutate(uf = toupper(uf))
-
-dados <- dados %>% left_join(eleitos, by = c("nome_urna" = "nome_urna", "uf" = "uf")) 
-dados <- dados %>% mutate(eleito = ifelse(is.na(eleito), FALSE, eleito))
-
-dados <- dados[,-c(61:63)]
-
-eleitos <- dados %>% filter(eleito == TRUE)
+dados <- read_projectdata()
+# eleitos <- read_csv(here::here("data/eleitos.csv"), col_types = cols(
+#         eleito = col_logical()))
+# dados <- read_csv(here::here("data/estado-dos-candidatos.csv"), 
+#     col_types = cols(candidaturas = col_double(), 
+#         eleito = col_logical(), recebeu = col_logical(), 
+#         respondeu = col_logical(),date_modified = col_datetime(format = ""),
+#                  date_created = col_datetime(format = "")))
+# 
+# dados <- dados[,-50]
+# 
+# eleitos <- eleitos %>% mutate(nome_urna = ifelse(nome_urna == "CHICO D&APOS;ANGELO", "CHICO D ANGELO", nome_urna))
+# eleitos <- eleitos %>% select(nome_urna, uf, eleito)
+# eleitos <- eleitos %>% mutate(nome_urna = toupper(nome_urna)) %>% mutate(uf = toupper(uf))
+# dados <- dados %>% mutate(nome_urna = toupper(nome_urna)) %>% mutate(uf = toupper(uf))
+# 
+# dados <- dados %>% left_join(eleitos, by = c("nome_urna" = "nome_urna", "uf" = "uf")) 
+# dados <- dados %>% mutate(eleito = ifelse(is.na(eleito), FALSE, eleito))
+# 
+# dados <- dados[,-c(61:63)]
+# 
+eleitos <- dados %>% filter(eleito == TRUE) 
 
 ```
 
@@ -261,6 +261,7 @@ dados %>%
     ) + scale_fill_manual(values = cbPalette)
 ```
 
+
 ### Relação partidos e estados na Voz Ativa
 
 A participação dos partidos nas eleições e como utilizaram a Voz Ativa em cada estado é observável abaixo. Em suma, os partidos com mais candidatos em um estado tem uma porcentagem baixa de adesão à plataforma. Há uma reafirmação da análise acima que indicou o NOVO, a REDE e o PSOL como os partidos mais presentes na Voz Ativa. 
@@ -287,6 +288,7 @@ Com o auxílio do Google Analytics coletamos as informações de tráfego e aces
 ### Quantidade de usuários por região
 
 ![](../img/acessos-por-regiao.png)
+
 
 ### Quantidade de visualizações da página 
 
